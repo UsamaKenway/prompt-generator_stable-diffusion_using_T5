@@ -15,9 +15,9 @@ model = AutoModelForCausalLM.from_pretrained("model-small").to('cuda')
 # model.eval()
 
 # Generate some text
-prompt = "a portrait of a man"
+prompt = "my name is"
 input_ids = tokenizer.encode(prompt, return_tensors="pt").to('cuda')
-output = model.generate(input_ids=input_ids, max_length=1000, do_sample=True)
+output = model.generate(input_ids=input_ids, max_length=50, do_sample=True)
 generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
 
 # Print the generated text

@@ -30,10 +30,12 @@ class PromptDataset(Dataset):
         input_ids = tokenizer.encode(prompt, return_tensors='pt').squeeze()
         return {'input_ids': input_ids.to(device)}
 
+
 # Load the dataset
 from datasets import load_dataset
 dataset = load_dataset("Gustavosta/Stable-Diffusion-Prompts")
 train_dataset = PromptDataset(dataset['train'].select(range(100)))
+val_dataset = PromptDataset(dataset['test'].select(range(100)))
 
 # df = pd.DataFrame(train_dataset.data, columns=["prompt"])
 #
@@ -45,10 +47,10 @@ print(f"Number of rows in train_dataset: {num_rows}")
 
 # Define the training parameters
 batch_size = 2
-num_epochs = 10
+num_epochs = 100
 learning_rate = 5e-5
 print_every = 100  # to print after how many batches
-save_every = 2000  # save model every 2000 batches
+save_every = 10  # save model every 2000 batches
 
 # model_dir = "saved_models"
 # if not os.path.exists(model_dir):
@@ -68,6 +70,7 @@ def collate_fn(batch, padding_value=0.0):
 
 # Create the data loader
 train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=collate_fn)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=collate_fn)
 
 # Define the optimizer and loss function
 optimizer = AdamW(model.parameters(), lr=learning_rate)
@@ -101,12 +104,28 @@ for epoch in range(num_epochs):
 
         if (i + 1) % print_every == 0:
             print(f"Epoch {epoch + 1}, Batch {i + 1}/{total_batches}, loss: {loss.item():.4f}")
-        if (i + 1) % save_every == 0:
-            model.save_pretrained('model')
+        # if (i + 1) % save_every == 0:
+        #    model.save_pretrained('model')
             #model_save_path = os.path.join(model_dir, f"model_epoch{epoch + 1}_batch{i + 1}.pt")
             #torch.save(model.state_dict(), model_save_path)
 
     # Print the average loss for the epoch
     avg_loss = total_loss / len(train_loader)
-    model.save_pretrained('model-small')
+
+    with torch.no_grad():
+        val_loss = 0.0
+        for i, batch in enumerate(val_loader):
+            input_ids = batch['input_ids']
+            outputs = model(input_ids=input_ids, labels=input_ids)
+            loss = loss_fn(outputs.logits.view(-1, outputs.logits.size(-1)), input_ids.view(-1))
+            val_loss += loss.item()
+
+        avg_val_loss = val_loss / len(val_loader)
+        print(f"Epoch {epoch + 1} - Avg Loss: {avg_loss:.4f}, Avg Val Loss: {avg_val_loss:.4f}")
+
+    if (epoch + 1) % save_every == 0:
+        print("saving model")
+        model.save_pretrained('model-small')
+
+
     print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}")

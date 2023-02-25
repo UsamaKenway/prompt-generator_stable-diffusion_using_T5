@@ -55,6 +55,7 @@ def collate_fn(batch, padding_value=0.0):
     input_ids = torch.nn.utils.rnn.pad_sequence(input_ids, batch_first=True, padding_value=padding_value)
     return {'input_ids': input_ids}
 
+
 # Create the data loader
 train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=collate_fn)
 
@@ -65,10 +66,18 @@ loss_fn = torch.nn.CrossEntropyLoss()
 # Start training
 total_batches = len(train_loader)
 print("training started")
+
 for epoch in range(num_epochs):
     total_loss = 0.0
     #for batch in tqdm(train_loader):
     for i, batch in enumerate(tqdm(train_loader)):
+
+        # print the batch text. to diagnose
+        # input_ids = batch['input_ids']
+        # for example_input_ids in input_ids:
+        #     input_text = tokenizer.decode(example_input_ids.tolist(), skip_special_tokens=True)
+        #     print(input_text)
+
         # Zero the gradients
         optimizer.zero_grad()
 
@@ -92,9 +101,8 @@ for epoch in range(num_epochs):
             print(f"Epoch {epoch + 1}, Batch {i + 1}/{total_batches}, loss: {loss.item():.4f}")
         if (i + 1) % save_every == 0:
             model.save_pretrained('model')
-            #model_save_path = os.path.join(model_dir, f"model_epoch{epoch + 1}_batch{i + 1}.pt")
-            #torch.save(model.state_dict(), model_save_path)
-
+            # model_save_path = os.path.join(model_dir, f"model_epoch{epoch + 1}_batch{i + 1}.pt")
+            # torch.save(model.state_dict(), model_save_path)
     # Print the average loss for the epoch
     avg_loss = total_loss / len(train_loader)
     print(f"Epoch {epoch+1} - Avg Loss: {avg_loss:.4f}")
