@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.bin
 
 # Distribution / packaging
 .Python
@@ -14,7 +15,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+li
+
 lib64/
 parts/
 sdist/
@@ -26,6 +28,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.pt
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -127,3 +130,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/saved_models/
+/valid_dataset.pt
+/train_dataset.pt
+/dataset.pt
+/model-small/pytorch_model.bin
+/model-neo/pytorch_model.bin
+/model/pytorch_model.bin
+/t5-base-finetuned/
